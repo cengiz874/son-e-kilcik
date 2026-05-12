@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>TERMINAL // TEKIN_ONLY</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500;700&family=Orbitron:wght@900&display=swap');
+
+  :root {
+    --main: #00ff88;
+    --dim: rgba(0, 255, 136, 0.15);
+    --bg: #030303;
+    --panel: #080808;
+    --border: #121212;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background-color: var(--bg);
+    color: var(--main);
+    font-family: 'Fira Code', monospace;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Scanlines & Grid Effect */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+                radial-gradient(circle, transparent 20%, var(--bg) 150%);
+    background-size: 100% 4px, 100% 100%;
+    z-index: 100;
+    pointer-events: none;
+  }
+
+  .console-frame {
+    width: 95%;
+    max-width: 420px;
+    background: var(--panel);
+    border: 2px solid var(--border);
+    position: relative;
+    box-shadow: 0 0 60px rgba(0,0,0,1);
+    z-index: 10;
+  }
+
+  .top-bar {
+    background: var(--border);
+    padding: 12px;
+    font-size: 10px;
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Orbitron', sans-serif;
+    border-bottom: 1px solid #1a1a1a;
+  }
+
+  .main-content { padding: 40px 25px; }
+
+  .view { display: none; }
+  .view.active { display: block; animation: glitch 0.3s ease; }
+
+  .glitch-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 35px;
+    letter-spacing: 6px;
+    color: #fff;
+    text-shadow: 2px 2px var(--main);
+  }
+
+  .field { margin-bottom: 25px; }
+
+  label {
+    display: block;
+    font-size: 9px;
+    margin-bottom: 10px;
+    color: #444;
+    font-weight: 700;
+  }
+
+  input {
+    width: 100%;
+    background: #000;
+    border: 1px solid var(--border);
+    padding: 16px;
+    color: var(--main);
+    font-family: 'Fira Code', monospace;
+    font-size: 16px;
+    outline: none;
+    transition: 0.2s;
+    border-radius: 2px;
+  }
+
+  input:focus {
+    border-color: var(--main);
+    background: rgba(0, 255, 136, 0.02);
+  }
+
+  .action-btn {
+    width: 100%;
+    background: var(--main);
+    color: #000;
+    border: none;
+    padding: 18px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 13px;
+    letter-spacing: 4px;
+    cursor: pointer;
+    border-radius: 2px;
+    margin-top: 10px;
+  }
+
+  .action-btn:active { background: #fff; transform: translateY(2px); }
+
+  .error-box {
+    color: #ff0055;
+    font-size: 11px;
+    text-align: center;
+    margin-top: 20px;
+    display: none;
+    background: rgba(255, 0, 85, 0.1);
+    padding: 10px;
+    border: 1px solid #ff0055;
+  }
+
+  .crack-zone {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin: 25px 0;
+  }
+
+  .digit {
+    aspect-ratio: 1;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: #000;
+    font-weight: 700;
+  }
+
+  .digit.processing { border-color: #fff; color: #fff; box-shadow: 0 0 15px rgba(255,255,255,0.2); }
+  .digit.done { color: var(--main); border-color: var(--main); background: var(--dim); }
+
+  .info-text { font-size: 10px; color: #444; text-align: center; margin-top: 20px; }
+
+  /* Full Screen Overlay */
+  .result-page {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: #000;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 30px;
+  }
+
+  @keyframes glitch {
+    0% { transform: translate(2px, 2px); }
+    50% { transform: translate(-2px, -2px); }
+    100% { transform: translate(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="console-frame">
+  <div class="top-bar">
+    <div id="timer">00:00:00</div>
+    <div>AUTHORIZED_ACCESS</div>
+  </div>
+
+  <div class="main-content">
+    <!-- GİRİŞ -->
+    <div id="view1" class="view active">
+      <div class="glitch-title">ROOT_LOGIN</div>
+      <div class="field">
+        <label>OPERATOR_ID</label>
+        <input type="text" id="uField" placeholder="İSİM GİRİN" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label>ACCESS_KEY</label>
+        <input type="password" id="pField" placeholder="ŞİFRE">
+      </div>
+      <button class="action-btn" onclick="login()">LOGIN</button>
+      <div id="err" class="error-box">ERROR: INVALID IDENTITY</div>
+    </div>
+
+    <!-- HEDEF -->
+    <div id="view2" class="view">
+      <div class="glitch-title">TARGET_NODE</div>
+      <div class="field">
+        <label>DECRYPT_TARGET</label>
+        <input type="number" id="tField" inputmode="numeric" placeholder="SAYI GİRİN">
+      </div>
+      <button class="action-btn" onclick="initBrute()">START ATTACK</button>
+      <div class="info-text">Hedef sisteme sızmak için sayısal bir dizi tanımlayın.</div>
+    </div>
+
+    <!-- KIRMA -->
+    <div id="view3" class="view">
+      <div class="glitch-title">BRUTE_FORCING</div>
+      <div id="digits" class="crack-zone"></div>
+      <div class="info-text" id="statusMsg">ANALYZING LAYERS...</div>
+    </div>
+  </div>
+</div>
+
+<div class="result-page" id="resPage">
+  <div class="glitch-title" style="font-size: 32px;">ACCESS_GRANTED</div>
+  <div style="font-size: 12px; color: #444; margin-bottom: 10px;">OPERATOR: TEKIN</div>
+  <div id="resCode" style="font-size: 50px; font-weight: 900; color: var(--main); margin-bottom: 50px;"></div>
+  <button class="action-btn" style="width: 200px" onclick="location.reload()">TERMINATE</button>
+</div>
+
+<script>
+  // SADECE TEKİN (51)
+  const ADMIN_ID = "TEKIN";    
+  const ADMIN_PW = "5231";
+
+  // Saat
+  setInterval(() => {
+    document.getElementById('timer').textContent = new Date().toLocaleTimeString();
+  }, 1000);
+
+  function login() {
+    const u = document.getElementById('uField').value.trim().toUpperCase()
+      .replace(/İ/g, 'I').replace(/İ/g, 'I'); // Karakter temizliği
+    const p = document.getElementById('pField').value.trim();
+    const err = document.getElementById('err');
+
+    // "TEKIN" veya "TEKİN" yazılsa da kabul etmesi için kontrol
+    if ((u === "TEKIN" || u === "TEKİN") && p === ADMIN_PW) {
+      changeView('view1', 'view2');
+    } else {
+      err.style.display = 'block';
+      document.getElementById('pField').value = "";
+    }
+  }
+
+  function initBrute() {
+    const val = document.getElementById('tField').value;
+    if (val.length < 1) return;
+    changeView('view2', 'view3');
+    startSim(val);
+  }
+
+  function changeView(h, s) {
+    document.getElementById(h).classList.remove('active');
+    document.getElementById(s).classList.add('active');
+  }
+
+  function startSim(code) {
+    const container = document.getElementById('digits');
+    const msg = document.getElementById('statusMsg');
+    container.innerHTML = '';
+    const slots = [];
+
+    for (let char of code) {
+      const div = document.createElement('div');
+      div.className = 'digit';
+      div.textContent = '0';
+      container.appendChild(div);
+      slots.push({ el: div, goal: char, fixed: false });
+    }
+
+    const loop = setInterval(() => {
+      slots.forEach(s => {
+        if (!s.fixed) s.el.textContent = Math.floor(Math.random() * 10);
+      });
+    }, 50);
+
+    let doneCount = 0;
+    slots.forEach((s, i) => {
+      const delay = 3000 + (i * 2500); // Gerçekçi olması için uzun süre
+
+      setTimeout(() => {
+        s.el.classList.add('processing');
+        msg.textContent = `DECRYPTING SEGMENT ${i+1}...`;
+      }, delay - 1000);
+
+      setTimeout(() => {
+        s.fixed = true;
+        s.el.textContent = s.goal;
+        s.el.classList.remove('processing');
+        s.el.classList.add('done');
+        doneCount++;
+        
+        if (doneCount === slots.length) {
+          clearInterval(loop);
+          msg.textContent = "DECRYPTION COMPLETE.";
+          setTimeout(() => {
+            document.getElementById('resCode').textContent = code;
+            document.getElementById('resPage').style.display = 'flex';
+          }, 1200);
+        }
+      }, delay);
+    });
+  }
+</script>
+
+</body>
+</html>
